@@ -1,7 +1,6 @@
 package Controller;
 
 import Service.BookService;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Controller;
@@ -10,12 +9,13 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import pojo.Books;
 
-import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+
 @Controller
 @RequestMapping("/book")
 public class BookController {
-@Autowired
+    @Autowired
     @Qualifier("BookServiceImpl")
     private BookService bookService;
 
@@ -25,48 +25,50 @@ public class BookController {
         model.addAttribute("list", list);
         return "allBook";
     }
-    //跳转增加书籍页面
+
+    // 跳转增加书籍页面
     @RequestMapping("/toAddBook")
     public String toAddPaper() {
         return "addBook";
     }
-    //添加书籍请求
+
+    // 添加书籍请求
     @RequestMapping("/addBook")
     public String addPaper(Books books) {
-        System.out.println(books);
         bookService.addBook(books);
         return "redirect:/book/allBook";
     }
-    //跳转修改书籍页面
+
+    // 跳转修改书籍页面
     @RequestMapping("/toUpdateBook")
     public String toUpdateBook(Model model, int id) {
         Books books = bookService.queryBookById(id);
-        System.out.println(books);
-        model.addAttribute("book",books );
+        model.addAttribute("book", books);
         return "updateBook";
     }
-//修改请求
+
+    // 修改请求
     @RequestMapping("/updateBook")
-    public String updateBook(Model model, Books book) {
-        System.out.println(book);
+    public String updateBook(Books book) {
         bookService.updateBook(book);
-        Books books = bookService.queryBookById(book.getBookID());
-        model.addAttribute("books", books);
         return "redirect:/book/allBook";
     }
-    //删除书籍
+
+    // 删除书籍
     @RequestMapping("/deleteBook/{bookId}")
     public String deleteBook(@PathVariable("bookId") int id) {
         bookService.deleteBookById(id);
         return "redirect:/book/allBook";
     }
-    //查询书籍
+
+    // 查询书籍：没有匹配结果时返回空列表，而不是包含 null 的列表
     @RequestMapping("/queryBook")
-    public String queryBook(String  queryBookName,Model model){
-    Books books=bookService.queryBookByName(queryBookName);
-    List<Books>  list =new ArrayList<Books>();
-    list.add(books);
-    model.addAttribute("list",list);
-    return "allBook";
-  }
+    public String queryBook(String queryBookName, Model model) {
+        Books book = bookService.queryBookByName(queryBookName);
+        List<Books> list = book == null
+                ? Collections.<Books>emptyList()
+                : Collections.singletonList(book);
+        model.addAttribute("list", list);
+        return "allBook";
+    }
 }
